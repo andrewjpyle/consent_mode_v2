@@ -1,0 +1,45 @@
+<!--
+  Consent Mode v2 — Vite / static-SPA head snippet.
+
+  Paste into <head> of index.html, BEFORE any other analytics/ad tag. Replace
+  G-XXXXXXXXXX with the site's own measurement id (or wire it at build time:
+  Vite inlines import.meta.env, so you can run a tiny build step that sed-
+  replaces the placeholder with %VITE_GA_MEASUREMENT_ID%, or hardcode it).
+
+  Behavior matches ../consent-init.js: default DENIED, then resolve via
+  stored choice or Cloudflare /cdn-cgi/trace geo and apply with 'update'
+  (a page-level default can't override a container's denied default). The
+  React <CookieConsentBanner/> handles Accept/Reject + persistence.
+-->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('consent', 'default', {
+    ad_storage: 'denied', analytics_storage: 'denied',
+    ad_user_data: 'denied', ad_personalization: 'denied',
+    wait_for_update: 2000
+  });
+  gtag('set', 'ads_data_redaction', true);
+  gtag('set', 'url_passthrough', true);
+  (function () {
+    var KEY = 'cookie_consent_v1';
+    var EEA = ['AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU','IE','IT','LV','LT','LU','MT','NL','PL','PT','RO','SK','SI','ES','SE','IS','LI','NO','GB'];
+    function setConsent(v) {
+      gtag('consent', 'update', { ad_storage: v, analytics_storage: v, ad_user_data: v, ad_personalization: v });
+    }
+    try {
+      var c = JSON.parse(localStorage.getItem(KEY) || 'null');
+      if (c && c.choice) { setConsent(c.choice === 'granted' ? 'granted' : 'denied'); return; }
+    } catch (e) {}
+    fetch('/cdn-cgi/trace').then(function (r) { return r.text(); }).then(function (t) {
+      var m = t.match(/loc=([A-Z][A-Z])/);
+      var loc = m ? m[1] : '';
+      setConsent(loc && EEA.indexOf(loc) === -1 ? 'granted' : 'denied');
+    }).catch(function () { setConsent('denied'); });
+  })();
+
+  gtag('config', 'G-XXXXXXXXXX');
+</script>
