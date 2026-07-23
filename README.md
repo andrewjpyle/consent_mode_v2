@@ -140,3 +140,13 @@ If you see `G100` when you expect `G111`, you are almost certainly looking at th
 ## License
 
 MIT.
+
+---
+
+## Part of a larger system
+
+`consent_mode_v2` is one of the reusable pieces pulled out of a private, autonomous build
+system and released on its own — the machine needed it, so it built it, and now
+it's yours too, MIT-licensed.
+
+See the rest of the parts → **https://autonomousaj.com/parts**
