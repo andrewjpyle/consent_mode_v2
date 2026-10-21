@@ -1,0 +1,8 @@
+{
+  "name": "consent-mode-v2",
+  "private": true,
+  "type": "module",
+  "description": "Test harness only. The package itself is vendored by copying files from src/.",
+  "scripts": { "test": "node --test test/consent-init.test.js" },
+  "engines": { "node": ">=20" }
+}
