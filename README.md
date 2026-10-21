@@ -137,6 +137,10 @@ If you see `G100` when you expect `G111`, you are almost certainly looking at th
 - Your site must be behind **Cloudflare** for the `/cdn-cgi/trace` geo lookup. It isn't behind Cloudflare? The lookup fails, the code fails closed to `denied`, and everyone sees the banner. That's a safe degradation, not a broken one — but you'll want to swap in your own region resolver.
 - The measurement id should be injected at **build time** from your secret store, not committed.
 
+## Tests
+
+`npm test` runs `test/consent-init.test.js` with Node's built-in runner (Node 20 or newer, no install step). It checks that every branch ends in a `consent` `update`, that region lookup failures fail closed, and that the inlined copies in `src/` still use the same storage key and EEA/UK list as `src/consent-init.js`.
+
 ## License
 
 MIT.
