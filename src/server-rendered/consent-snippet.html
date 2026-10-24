@@ -1,10 +1,10 @@
 <!--
-  Consent Mode v2 — server-rendered drop-in (Django template / WordPress /
+  Consent Mode v2, server-rendered drop-in (Django template / WordPress /
   Shopify Liquid / plain static HTML).
 
   TWO parts:
-   (A) HEAD snippet — paste in <head> BEFORE any other analytics/ad tag.
-   (B) BANNER snippet — paste just before </body>.
+   (A) HEAD snippet, paste in <head> BEFORE any other analytics/ad tag.
+   (B) BANNER snippet, paste just before </body>.
 
   Replace G-XXXXXXXXXX with the site's own measurement id. In a template engine
   you can interpolate it ({{ ga_id }} in Django, <?php echo $ga_id ?> in WP,
@@ -33,25 +33,30 @@
     var KEY = 'cookie_consent_v1';
     var EEA = ['AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU','IE','IT','LV','LT','LU','MT','NL','PL','PT','RO','SK','SI','ES','SE','IS','LI','NO','GB'];
     function setConsent(v){ gtag('consent','update',{ad_storage:v,analytics_storage:v,ad_user_data:v,ad_personalization:v}); }
-    try { var c = JSON.parse(localStorage.getItem(KEY) || 'null');
-      if (c && c.choice) { setConsent(c.choice === 'granted' ? 'granted' : 'denied'); return; } } catch (e) {}
+    function stored(){
+      try { var c = JSON.parse(localStorage.getItem(KEY) || 'null');
+        if (c && c.choice) return c.choice === 'granted' ? 'granted' : 'denied'; } catch (e) {}
+      return '';
+    }
+    if (stored()) { setConsent(stored()); return; }
     fetch('/cdn-cgi/trace').then(function(r){return r.text();}).then(function(t){
       var m = t.match(/loc=([A-Z][A-Z])/); var loc = m ? m[1] : '';
+      if (stored()) return; // the visitor chose while the lookup ran
       setConsent(loc && EEA.indexOf(loc) === -1 ? 'granted' : 'denied');
-    }).catch(function(){ setConsent('denied'); });
+    }).catch(function(){ if (!stored()) setConsent('denied'); });
   })();
 
   gtag('config', 'G-XXXXXXXXXX');
 </script>
 
-<!-- ===== (B) BANNER — paste before </body>. Vanilla JS, no dependencies. ===== -->
+<!-- ===== (B) BANNER, paste before </body>. Vanilla JS, no dependencies. ===== -->
 <div id="cookie-consent" role="dialog" aria-live="polite" aria-label="Cookie consent"
      style="display:none;position:fixed;left:0;right:0;bottom:0;z-index:9999;padding:16px;">
   <div style="max-width:880px;margin:0 auto;display:flex;flex-wrap:wrap;align-items:center;gap:16px;padding:16px 20px;border-radius:12px;background:rgba(17,17,19,0.96);color:#e8e8ea;border:1px solid rgba(255,255,255,0.12);box-shadow:0 8px 40px rgba(0,0,0,0.45);font-size:14px;line-height:1.5;">
-    <p style="flex:1 1 280px;margin:0;">We use cookies for analytics and to improve your experience. You can accept or reject non-essential cookies. See our <a href="/cookies" style="color:#43ccad;text-decoration:underline;">Privacy &amp; Cookie Policy</a>.</p>
+    <p style="flex:1 1 280px;margin:0;">We use cookies for analytics and to improve your experience. You can accept or reject non-essential cookies. See our <a href="/cookies" style="color:var(--primary, #43ccad);text-decoration:underline;">Privacy &amp; Cookie Policy</a>.</p>
     <div style="display:flex;gap:12px;flex-shrink:0;">
       <button type="button" id="cc-reject" style="padding:8px 16px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;color:#e8e8ea;background:transparent;border:1px solid rgba(255,255,255,0.24);">Reject</button>
-      <button type="button" id="cc-accept" style="padding:8px 16px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;color:#0b0b0c;background:#43ccad;border:1px solid #43ccad;">Accept</button>
+      <button type="button" id="cc-accept" style="padding:8px 16px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;color:#0b0b0c;background:var(--primary, #43ccad);border:1px solid var(--primary, #43ccad);">Accept</button>
     </div>
   </div>
 </div>

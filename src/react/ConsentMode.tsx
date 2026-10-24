@@ -1,5 +1,5 @@
 /*
- * Consent Mode v2 — Next.js App Router drop-in.
+ * Consent Mode v2, Next.js App Router drop-in.
  *
  * Renders (a) the gtag.js loader, (b) the consent-default-denied + geo-resolve
  * init, (c) optional secondary destinations (Google Ads), and (d) the cookie
@@ -9,7 +9,7 @@
  *
  * Single-tenant:   <ConsentMode gaId={process.env.NEXT_PUBLIC_GA4_ID!} />
  * Multi-tenant:    resolve the id by request host in the (server) layout and
- *                  pass it in — see README "Multi-tenant".
+ *                  pass it in, see README "Multi-tenant".
  *
  * If gaId is empty the whole block is omitted (so a misconfigured build never
  * silently falls back to a wrong/contaminated container).
@@ -42,7 +42,7 @@ export default function ConsentMode({ gaId, adsId }: Props) {
           function gtag(){dataLayer.push(arguments);}
           gtag('js', new Date());
 
-          // Consent Mode v2 — default DENIED (a page-level default can't override
+          // Consent Mode v2, default DENIED (a page-level default can't override
           // the container's denied default; only an explicit 'update' can), then
           // resolve via stored choice or Cloudflare /cdn-cgi/trace geo and apply
           // with 'update'. Non-EEA/UK -> granted; EEA/UK -> denied until accept.
@@ -61,15 +61,20 @@ export default function ConsentMode({ gaId, adsId }: Props) {
                 ad_storage: v, analytics_storage: v, ad_user_data: v, ad_personalization: v
               });
             }
-            try {
-              var c = JSON.parse(localStorage.getItem(KEY) || 'null');
-              if (c && c.choice) { setConsent(c.choice === 'granted' ? 'granted' : 'denied'); return; }
-            } catch (e) {}
+            function stored() {
+              try {
+                var c = JSON.parse(localStorage.getItem(KEY) || 'null');
+                if (c && c.choice) return c.choice === 'granted' ? 'granted' : 'denied';
+              } catch (e) {}
+              return '';
+            }
+            if (stored()) { setConsent(stored()); return; }
             fetch('/cdn-cgi/trace').then(function (r) { return r.text(); }).then(function (t) {
               var m = t.match(/loc=([A-Z][A-Z])/);
               var loc = m ? m[1] : '';
+              if (stored()) return; // the visitor chose while the lookup ran
               setConsent(loc && EEA.indexOf(loc) === -1 ? 'granted' : 'denied');
-            }).catch(function () { setConsent('denied'); });
+            }).catch(function () { if (!stored()) setConsent('denied'); });
           })();
 
           ${configLines.join("\n          ")}
