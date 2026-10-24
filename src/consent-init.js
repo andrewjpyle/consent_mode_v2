@@ -1,9 +1,9 @@
 /*
- * Consent Mode v2 — canonical init logic (framework-agnostic).
+ * Consent Mode v2, canonical init logic (framework-agnostic).
  *
  * SINGLE SOURCE OF TRUTH for the behavior. The per-stack drop-ins (react/,
  * vite/, server-rendered/) inline an equivalent of this so each stays
- * zero-dependency — when you change the region list or the storage key,
+ * zero-dependency, when you change the region list or the storage key,
  * change it HERE and re-sync the inlined copies.
  *
  * Behavior:
@@ -23,7 +23,7 @@
  *
  * This is the bug that silently zeroes your analytics. You set a page-level
  * default of 'granted', you see the consent ping fire, everything looks
- * plumbed — and the container's default wins, so you collect nothing. The
+ * plumbed, and the container's default wins, so you collect nothing. The
  * fix is that every path through this file terminates in an `update`, even
  * the "no banner needed, they're outside the EEA" path.
  * ─────────────────────────────────────────────────────────────────────────
@@ -70,7 +70,7 @@ export function setConsent(value) {
 
 /**
  * Call ONCE on first load, after gtag('js', ...) and the consent 'default'.
- * Every branch ends in setConsent() — see the gotcha above.
+ * Every branch ends in setConsent(), see the gotcha above.
  */
 export function resolveInitialConsent() {
   if (storedChoice()) {
@@ -100,6 +100,6 @@ export function applyConsentChoice(choice) {
       JSON.stringify({ choice: choice, ts: Date.now() })
     );
   } catch (e) {
-    /* persistence unavailable — the choice still applies for this session */
+    /* persistence unavailable, the choice still applies for this session */
   }
 }

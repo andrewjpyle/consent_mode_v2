@@ -1,7 +1,7 @@
 "use client";
 
 /*
- * Consent Mode v2 — cookie banner (Next.js / any React).
+ * Consent Mode v2, cookie banner (Next.js / any React).
  *
  * Binary Accept-all / Reject-all, both prominent + a policy link. Shows only
  * when no choice is stored. On choice: gtag('consent','update', …) + persist to
@@ -35,7 +35,7 @@ function applyConsent(choice: Choice) {
   try {
     localStorage.setItem(CONSENT_KEY, JSON.stringify({ choice, ts: Date.now() }));
   } catch {
-    /* persistence unavailable — choice still applied this session */
+    /* persistence unavailable, choice still applied this session */
   }
 }
 

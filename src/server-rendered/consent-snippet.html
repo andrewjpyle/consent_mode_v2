@@ -1,10 +1,10 @@
 <!--
-  Consent Mode v2 — server-rendered drop-in (Django template / WordPress /
+  Consent Mode v2, server-rendered drop-in (Django template / WordPress /
   Shopify Liquid / plain static HTML).
 
   TWO parts:
-   (A) HEAD snippet — paste in <head> BEFORE any other analytics/ad tag.
-   (B) BANNER snippet — paste just before </body>.
+   (A) HEAD snippet, paste in <head> BEFORE any other analytics/ad tag.
+   (B) BANNER snippet, paste just before </body>.
 
   Replace G-XXXXXXXXXX with the site's own measurement id. In a template engine
   you can interpolate it ({{ ga_id }} in Django, <?php echo $ga_id ?> in WP,
@@ -49,7 +49,7 @@
   gtag('config', 'G-XXXXXXXXXX');
 </script>
 
-<!-- ===== (B) BANNER — paste before </body>. Vanilla JS, no dependencies. ===== -->
+<!-- ===== (B) BANNER, paste before </body>. Vanilla JS, no dependencies. ===== -->
 <div id="cookie-consent" role="dialog" aria-live="polite" aria-label="Cookie consent"
      style="display:none;position:fixed;left:0;right:0;bottom:0;z-index:9999;padding:16px;">
   <div style="max-width:880px;margin:0 auto;display:flex;flex-wrap:wrap;align-items:center;gap:16px;padding:16px 20px;border-radius:12px;background:rgba(17,17,19,0.96);color:#e8e8ea;border:1px solid rgba(255,255,255,0.12);box-shadow:0 8px 40px rgba(0,0,0,0.45);font-size:14px;line-height:1.5;">

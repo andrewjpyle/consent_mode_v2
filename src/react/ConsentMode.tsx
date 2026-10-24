@@ -1,5 +1,5 @@
 /*
- * Consent Mode v2 — Next.js App Router drop-in.
+ * Consent Mode v2, Next.js App Router drop-in.
  *
  * Renders (a) the gtag.js loader, (b) the consent-default-denied + geo-resolve
  * init, (c) optional secondary destinations (Google Ads), and (d) the cookie
@@ -9,7 +9,7 @@
  *
  * Single-tenant:   <ConsentMode gaId={process.env.NEXT_PUBLIC_GA4_ID!} />
  * Multi-tenant:    resolve the id by request host in the (server) layout and
- *                  pass it in — see README "Multi-tenant".
+ *                  pass it in, see README "Multi-tenant".
  *
  * If gaId is empty the whole block is omitted (so a misconfigured build never
  * silently falls back to a wrong/contaminated container).
@@ -42,7 +42,7 @@ export default function ConsentMode({ gaId, adsId }: Props) {
           function gtag(){dataLayer.push(arguments);}
           gtag('js', new Date());
 
-          // Consent Mode v2 — default DENIED (a page-level default can't override
+          // Consent Mode v2, default DENIED (a page-level default can't override
           // the container's denied default; only an explicit 'update' can), then
           // resolve via stored choice or Cloudflare /cdn-cgi/trace geo and apply
           // with 'update'. Non-EEA/UK -> granted; EEA/UK -> denied until accept.
