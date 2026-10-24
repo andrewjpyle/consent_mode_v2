@@ -6,8 +6,13 @@
  * Binary Accept-all / Reject-all, both prominent + a policy link. Shows only
  * when no choice is stored. On choice: gtag('consent','update', …) + persist to
  * localStorage under the shared key, which ConsentMode's init re-applies on
- * later loads. Styled with INLINE styles (no Tailwind/theme-token dependency)
- * so it drops into any repo; restyle freely.
+ * later loads. Inline-styled so it drops into any repo, but the accent (Accept
+ * button + policy link) reads the host site's `--primary` CSS custom property
+ * with the teal as a fallback: `var(--primary, #43ccad)`. A site that defines
+ * `--primary` gets its own brand color; a site without it still renders. If
+ * your `--primary` is dark or near-black, set it to a real CTA color for the
+ * banner or override the accent locally, and check the Accept label contrast
+ * (the label is dark, so it assumes a light accent).
  *
  * Set POLICY_HREF to the host site's cookie/privacy anchor.
  */
@@ -74,7 +79,7 @@ export default function CookieConsent() {
         <p style={{ flex: "1 1 280px", margin: 0 }}>
           We use cookies for analytics and to improve your experience. You can
           accept or reject non-essential cookies. See our{" "}
-          <a href={POLICY_HREF} style={{ color: "#43ccad", textDecoration: "underline" }}>
+          <a href={POLICY_HREF} style={{ color: "var(--primary, #43ccad)", textDecoration: "underline" }}>
             Privacy &amp; Cookie Policy
           </a>
           .
@@ -96,8 +101,8 @@ export default function CookieConsent() {
             onClick={() => choose("granted")}
             style={{
               padding: "8px 16px", borderRadius: 8, fontSize: 14, fontWeight: 600,
-              cursor: "pointer", color: "#0b0b0c", background: "#43ccad",
-              border: "1px solid #43ccad",
+              cursor: "pointer", color: "#0b0b0c", background: "var(--primary, #43ccad)",
+              border: "1px solid var(--primary, #43ccad)",
             }}
           >
             Accept

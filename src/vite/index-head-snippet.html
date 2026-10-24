@@ -30,15 +30,20 @@
     function setConsent(v) {
       gtag('consent', 'update', { ad_storage: v, analytics_storage: v, ad_user_data: v, ad_personalization: v });
     }
-    try {
-      var c = JSON.parse(localStorage.getItem(KEY) || 'null');
-      if (c && c.choice) { setConsent(c.choice === 'granted' ? 'granted' : 'denied'); return; }
-    } catch (e) {}
+    function stored() {
+      try {
+        var c = JSON.parse(localStorage.getItem(KEY) || 'null');
+        if (c && c.choice) return c.choice === 'granted' ? 'granted' : 'denied';
+      } catch (e) {}
+      return '';
+    }
+    if (stored()) { setConsent(stored()); return; }
     fetch('/cdn-cgi/trace').then(function (r) { return r.text(); }).then(function (t) {
       var m = t.match(/loc=([A-Z][A-Z])/);
       var loc = m ? m[1] : '';
+      if (stored()) return; // the visitor chose while the lookup ran
       setConsent(loc && EEA.indexOf(loc) === -1 ? 'granted' : 'denied');
-    }).catch(function () { setConsent('denied'); });
+    }).catch(function () { if (!stored()) setConsent('denied'); });
   })();
 
   gtag('config', 'G-XXXXXXXXXX');

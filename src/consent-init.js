@@ -40,6 +40,17 @@ export var EEA_UK = [
   'SI', 'ES', 'SE', 'IS', 'LI', 'NO', 'GB',
 ];
 
+// The visitor's saved choice ('granted' | 'denied'), or '' when none or storage is blocked.
+function storedChoice() {
+  try {
+    var stored = JSON.parse(localStorage.getItem(CONSENT_KEY) || 'null');
+    if (stored && stored.choice) return stored.choice === 'granted' ? 'granted' : 'denied';
+  } catch (e) {
+    /* localStorage blocked (Safari private mode, etc.) */
+  }
+  return '';
+}
+
 function gtagSafe() {
   // window.gtag is defined by the loader snippet that runs before this.
   if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
@@ -62,14 +73,9 @@ export function setConsent(value) {
  * Every branch ends in setConsent() — see the gotcha above.
  */
 export function resolveInitialConsent() {
-  try {
-    var stored = JSON.parse(localStorage.getItem(CONSENT_KEY) || 'null');
-    if (stored && stored.choice) {
-      setConsent(stored.choice === 'granted' ? 'granted' : 'denied');
-      return;
-    }
-  } catch (e) {
-    /* localStorage blocked (Safari private mode, etc.) — fall through to geo */
+  if (storedChoice()) {
+    setConsent(storedChoice());
+    return;
   }
 
   fetch('/cdn-cgi/trace')
@@ -77,9 +83,12 @@ export function resolveInitialConsent() {
     .then(function (t) {
       var m = t.match(/loc=([A-Z][A-Z])/);
       var loc = m ? m[1] : '';
+      // The visitor may have clicked Accept/Reject while the lookup was in
+      // flight. An explicit choice always beats the geo guess.
+      if (storedChoice()) return;
       setConsent(loc && EEA_UK.indexOf(loc) === -1 ? 'granted' : 'denied');
     })
-    .catch(function () { setConsent('denied'); }); // fail closed
+    .catch(function () { if (!storedChoice()) setConsent('denied'); }); // fail closed
 }
 
 /** Call from the banner on Accept ('granted') / Reject ('denied'). */
