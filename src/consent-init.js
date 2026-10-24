@@ -85,6 +85,7 @@ export function resolveInitialConsent() {
       var loc = m ? m[1] : '';
       // The visitor may have clicked Accept/Reject while the lookup was in
       // flight. An explicit choice always beats the geo guess.
+      if (storedChoice()) return;
       setConsent(loc && EEA_UK.indexOf(loc) === -1 ? 'granted' : 'denied');
     })
     .catch(function () { if (!storedChoice()) setConsent('denied'); }); // fail closed
