@@ -1,9 +1,9 @@
 /*
- * Consent Mode v2 — canonical init logic (framework-agnostic).
+ * Consent Mode v2, canonical init logic (framework-agnostic).
  *
  * SINGLE SOURCE OF TRUTH for the behavior. The per-stack drop-ins (react/,
  * vite/, server-rendered/) inline an equivalent of this so each stays
- * zero-dependency — when you change the region list or the storage key,
+ * zero-dependency, when you change the region list or the storage key,
  * change it HERE and re-sync the inlined copies.
  *
  * Behavior:
@@ -23,7 +23,7 @@
  *
  * This is the bug that silently zeroes your analytics. You set a page-level
  * default of 'granted', you see the consent ping fire, everything looks
- * plumbed — and the container's default wins, so you collect nothing. The
+ * plumbed, and the container's default wins, so you collect nothing. The
  * fix is that every path through this file terminates in an `update`, even
  * the "no banner needed, they're outside the EEA" path.
  * ─────────────────────────────────────────────────────────────────────────
@@ -39,6 +39,17 @@ export var EEA_UK = [
   'HU', 'IE', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'PL', 'PT', 'RO', 'SK',
   'SI', 'ES', 'SE', 'IS', 'LI', 'NO', 'GB',
 ];
+
+// The visitor's saved choice ('granted' | 'denied'), or '' when none or storage is blocked.
+function storedChoice() {
+  try {
+    var stored = JSON.parse(localStorage.getItem(CONSENT_KEY) || 'null');
+    if (stored && stored.choice) return stored.choice === 'granted' ? 'granted' : 'denied';
+  } catch (e) {
+    /* localStorage blocked (Safari private mode, etc.) */
+  }
+  return '';
+}
 
 function gtagSafe() {
   // window.gtag is defined by the loader snippet that runs before this.
@@ -59,17 +70,12 @@ export function setConsent(value) {
 
 /**
  * Call ONCE on first load, after gtag('js', ...) and the consent 'default'.
- * Every branch ends in setConsent() — see the gotcha above.
+ * Every branch ends in setConsent(), see the gotcha above.
  */
 export function resolveInitialConsent() {
-  try {
-    var stored = JSON.parse(localStorage.getItem(CONSENT_KEY) || 'null');
-    if (stored && stored.choice) {
-      setConsent(stored.choice === 'granted' ? 'granted' : 'denied');
-      return;
-    }
-  } catch (e) {
-    /* localStorage blocked (Safari private mode, etc.) — fall through to geo */
+  if (storedChoice()) {
+    setConsent(storedChoice());
+    return;
   }
 
   fetch('/cdn-cgi/trace')
@@ -77,9 +83,12 @@ export function resolveInitialConsent() {
     .then(function (t) {
       var m = t.match(/loc=([A-Z][A-Z])/);
       var loc = m ? m[1] : '';
+      // The visitor may have clicked Accept/Reject while the lookup was in
+      // flight. An explicit choice always beats the geo guess.
+      if (storedChoice()) return;
       setConsent(loc && EEA_UK.indexOf(loc) === -1 ? 'granted' : 'denied');
     })
-    .catch(function () { setConsent('denied'); }); // fail closed
+    .catch(function () { if (!storedChoice()) setConsent('denied'); }); // fail closed
 }
 
 /** Call from the banner on Accept ('granted') / Reject ('denied'). */
@@ -91,6 +100,6 @@ export function applyConsentChoice(choice) {
       JSON.stringify({ choice: choice, ts: Date.now() })
     );
   } catch (e) {
-    /* persistence unavailable — the choice still applies for this session */
+    /* persistence unavailable, the choice still applies for this session */
   }
 }
